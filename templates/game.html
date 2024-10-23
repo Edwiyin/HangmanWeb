@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="game-header">
+            <h1>Hangman Game</h1>
+            <p class="player-info">Player: {{.Game.PlayerName}}</p>
+            <p class="difficulty">Difficulty: {{.Game.Difficulty}}</p>
+            <p class="tries">Remaining Tries: {{.Game.remainingTries}}</p>
+        </div>
+
+        {{if .Message}}
+        <div class="message {{.MessageType}}">
+            {{.Message}}
+        </div>
+        {{end}}
+
+        <div class="game-content">
+            <div class="word-display">
+                {{range .Game.GuessedWord}}
+                <span class="letter">{{if eq . "_"}}_{{else}}{{.}}{{end}}</span>
+                {{end}}
+            </div>
+
+            <div class="guessed-letters">
+                <h3>Guessed Letters:</h3>
+                <div class="letters-grid">
+                    {{range $letter := .Game.guessedLetters}}
+                    <span class="guessed-letter">{{$letter}}</span>
+                    {{end}}
+                </div>
+            </div>
+
+            <form action="/guess" method="POST" class="guess-form">
+                <div class="form-group">
+                    <label for="guess">Enter a letter or guess the word:</label>
+                    <input type="text" id="guess" name="guess" maxlength="30" pattern="[a-zA-Z]+" required>
+                    <small class="input-help">Enter a single letter or try to guess the whole word</small>
+                </div>
+                <button type="submit" class="guess-button">Submit Guess</button>
+            </form>
+        </div>
+
+        <div class="game-controls">
+            <a href="/" class="button">New Game</a>
+        </div>
+    </div>
+</body>
+</html>
