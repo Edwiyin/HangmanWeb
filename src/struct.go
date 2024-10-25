@@ -16,10 +16,11 @@ type PageData struct {
 type Game struct {
 	GuessedWord    []string
 	PlayerName     string
-	word           *Word
-	guessedLetters map[rune]string
-	remainingTries int
-	difficulty     Difficulty
+	Lives		  int
+	Word           *Word
+	GuessedLetters map[rune]string
+	RemainingTries int
+	Diff    Difficulty
 }
 
 type Word struct {

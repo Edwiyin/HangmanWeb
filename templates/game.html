@@ -1,5 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+    <style>
+        
+.button {
+    background-color: #333333;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+}
+    </style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,8 +24,8 @@
         <div class="game-header">
             <h1>Hangman Game</h1>
             <p class="player-info">Player: {{.Game.PlayerName}}</p>
-            <p class="difficulty">Difficulty: {{.Game.Difficulty}}</p>
-            <p class="tries">Remaining Tries: {{.Game.remainingTries}}</p>
+            <p class="difficulty">Difficulty: {{.Game.Diff}}</p>
+            <p class="tries">Remaining Tries: {{.Game.RemainingTries}}</p>
         </div>
 
         {{if .Message}}
@@ -24,14 +37,14 @@
         <div class="game-content">
             <div class="word-display">
                 {{range .Game.GuessedWord}}
-                <span class="letter">{{if eq . "_"}}_{{else}}{{.}}{{end}}</span>
+                <span class="letter"></span>
                 {{end}}
             </div>
 
             <div class="guessed-letters">
                 <h3>Guessed Letters:</h3>
                 <div class="letters-grid">
-                    {{range $letter := .Game.guessedLetters}}
+                    {{range $letter := .Game.GuessedLetters}}
                     <span class="guessed-letter">{{$letter}}</span>
                     {{end}}
                 </div>
@@ -41,9 +54,9 @@
                 <div class="form-group">
                     <label for="guess">Enter a letter or guess the word:</label>
                     <input type="text" id="guess" name="guess" maxlength="30" pattern="[a-zA-Z]+" required>
-                    <small class="input-help">Enter a single letter or try to guess the whole word</small>
+                    <small class="input-help">(Enter a single letter or try to guess the whole word)</small>
                 </div>
-                <button type="submit" class="guess-button">Submit Guess</button>
+                <button type="submit" class="button">Submit Guess</button>
             </form>
         </div>
 

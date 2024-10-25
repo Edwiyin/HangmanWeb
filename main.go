@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	hangmanweb "hangmanweb/src"
 	"html/template"
 	"log"
 	"net/http"
-	hangmanweb "hangmanweb/src"
 )
 
 var tmpl *template.Template
@@ -14,6 +14,39 @@ func init() {
 	tmpl = template.Must(template.ParseGlob("templates/*.html"))
 }
 
+func handleGuess(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Redirect(w, r, "/game", http.StatusSeeOther)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		log.Printf("Form parsing error: %v", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	playerName := r.PostForm.Get("playerName")
+	difficulty := r.PostForm.Get("difficulty")
+	guess := r.PostForm.Get("guess")
+
+	game := hangmanweb.CreateNewGame(playerName, difficulty)
+	game.ProcessLetterGuess(rune(guess[0]))
+
+	data := hangmanweb.PageData{
+		Title:       "Hangman Web - Game",
+		Game:        *game,
+		Message:     fmt.Sprintf("Welcome %s! Game started on %s difficulty", playerName, difficulty),
+		MessageType: "info",
+		Scores:      []hangmanweb.Score{},
+	}
+
+	if err := tmpl.ExecuteTemplate(w, "game.html", data); err != nil {
+		log.Printf("Template execution error: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+
+}
 func handleHome(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
@@ -30,7 +63,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 
 func handleGame(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/game", http.StatusSeeOther)
 		return
 	}
 
@@ -49,7 +82,7 @@ func handleGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	game := hangmanweb.CreateNewGame(playerName, difficulty)
-	
+
 	data := hangmanweb.PageData{
 		Title:       "Hangman Web - Game",
 		Game:        *game,
@@ -70,6 +103,7 @@ func main() {
 
 	http.HandleFunc("/", handleHome)
 	http.HandleFunc("/game", handleGame)
+	http.HandleFunc("/guess", handleGuess)
 
 	log.Println("Server started on http://localhost:8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {

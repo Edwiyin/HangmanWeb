@@ -3,12 +3,9 @@ package hangmanweb
 import (
 	"fmt"
 	"strings"
-	
 )
 
 func CreateNewGame(playerName, difficulty string) *Game {
-
-	
 	wordStr := "example"
 	guessedWord := make([]string, len(wordStr))
 	for i := range guessedWord {
@@ -20,10 +17,10 @@ func CreateNewGame(playerName, difficulty string) *Game {
 	return &Game{
 		GuessedWord:    guessedWord,
 		PlayerName:     playerName,
-		word:           word,
-		guessedLetters: make(map[rune]string),
-		remainingTries: 10,
-		difficulty:     Difficulty(difficulty),
+		Word:           word,
+		GuessedLetters: make(map[rune]string),
+		RemainingTries: 10,
+		Diff:     Difficulty(difficulty),
 	}
 }
 
@@ -38,22 +35,21 @@ func mapKeysToString(m map[rune]string) []string {
 func NewGame(words []string, difficulty Difficulty) *Game {
 	settings := DifficultyConfig[difficulty]
 	return &Game{
-		word:           NewWord(words),
-		guessedLetters: make(map[rune]string),
-		remainingTries: settings.MaxTries,
-		difficulty:     difficulty,
+		Word:           NewWord(words),
+		GuessedLetters: make(map[rune]string),
+		RemainingTries: settings.MaxTries,
+		Diff:     difficulty,
 	}
 }
 
 func (g *Game) Play() {
-	fmt.Printf("\nStarting a new game on %s difficulty!\n", g.difficulty)
-	settings := DifficultyConfig[g.difficulty]
-	g.word.RevealRandomLetters(settings.InitialReveals)
+	settings := DifficultyConfig[g.Diff]
+	g.Word.RevealRandomLetters(settings.InitialReveals)
 
 	for !g.IsGameOver() {
 		g.DisplayGameState()
 		guessedLettersBool := make(map[rune]bool)
-		for k := range g.guessedLetters {
+		for k := range g.GuessedLetters {
 			guessedLettersBool[k] = true
 		}
 		guess := GetPlayerGuess(guessedLettersBool)
@@ -67,38 +63,38 @@ func (g *Game) Play() {
 }
 
 func (g *Game) ProcessLetterGuess(letter rune) {
-	if g.word.RevealLetter(letter) {
-		g.guessedLetters[letter] = (string(letter))
+	if g.Word.RevealLetter(letter) {
+		g.GuessedLetters[letter] = (string(letter))
 		fmt.Println(("Correct guess!"))
 	} else {
-		g.guessedLetters[letter] = (string(letter))
-		g.remainingTries--
+		g.GuessedLetters[letter] = (string(letter))
+		g.RemainingTries--
 		fmt.Println(("Incorrect guess!"))
 	}
 }
 
 func (g *Game) ProcessWordGuess(word string) {
-	if g.word.Guess(word) {
-		g.word.RevealAllLetters()
+	if g.Word.Guess(word) {
+		g.Word.RevealAllLetters()
 		fmt.Println(("Correct word guess!"))
 	} else {
-		g.remainingTries -= 2
+		g.RemainingTries -= 2
 		fmt.Println(("Incorrect word guess! You lose 2 tries."))
 	}
 }
 
 func (g *Game) IsGameOver() bool {
-	return g.remainingTries <= 0 || g.word.IsFullyRevealed()
+	return g.RemainingTries <= 0 || g.Word.IsFullyRevealed()
 }
 
 func (g *Game) DisplayGameState() {
 	fmt.Print("\033[2J")
 	fmt.Print("\033[H")
 	fmt.Println(strings.Repeat("-", 40))
-	fmt.Printf("Word: %s\n",(g.word.GetDisplayWord()))
-	fmt.Printf("Remaining tries: %s\n", (fmt.Sprintf("%d", g.remainingTries)))
+	fmt.Printf("Word: %s\n",(g.Word.GetDisplayWord()))
+	fmt.Printf("Remaining tries: %s\n", (fmt.Sprintf("%d", g.RemainingTries)))
 	fmt.Printf("Guessed letters: ")
-	array := mapKeysToString(g.guessedLetters)
+	array := mapKeysToString(g.GuessedLetters)
 	for _, v := range array {
 		fmt.Printf("%s ", v)
 	}
@@ -107,7 +103,7 @@ func (g *Game) DisplayGameState() {
 }
 
 func (g *Game) CheckGuessedLetters(input string) bool {
-	for _, letter := range g.guessedLetters {
+	for _, letter := range g.GuessedLetters {
 		if letter == input {
 			return true
 		}
