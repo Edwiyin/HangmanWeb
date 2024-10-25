@@ -25,6 +25,7 @@ func init() {
 }
 
 func handleGuess(w http.ResponseWriter, r *http.Request) {
+
     if r.Method != http.MethodPost {
         http.Redirect(w, r, "/game", http.StatusSeeOther)
         return
@@ -55,27 +56,29 @@ func handleGuess(w http.ResponseWriter, r *http.Request) {
     var message string
     var messageType string
 
-    if game.MaxTries > 0 && !game.Word.IsFullyRevealed() {
+    if game.MaxTries > 0 && !isWordComplete(game.GuessedWord) {
         if len(guess) > 0 {
             letter := rune(strings.ToLower(guess)[0])
             
             if _, exists := game.GuessedLetters[letter]; !exists {
-                correct := game.Word.RevealLetter(letter)
-                
-                for i, char := range game.Word.GetFullWord() {
-                    if char == letter {
+          
+                fullWord := game.Word.GetFullWord()
+              
+                letterFound := false
+                for i, char := range fullWord {
+                    if strings.ToLower(string(char)) == string(letter) {
                         game.GuessedWord[i] = string(char)
+                        letterFound = true
                     }
                 }
 
                 game.GuessedLetters[letter] = string(letter)
 
-                if correct {
+                if letterFound {
                     message = "Correct guess!"
                     messageType = "info"
-                    
-                    
-                    if game.Word.IsFullyRevealed() {
+                  
+                    if isWordComplete(game.GuessedWord) {
                         message = "Congratulations! You've won!"
                         messageType = "success"
                     }
@@ -84,9 +87,8 @@ func handleGuess(w http.ResponseWriter, r *http.Request) {
                     messageType = "error"
                     game.MaxTries--
                     
-                   
                     if game.MaxTries <= 0 {
-                        message = fmt.Sprintf("Game Over! The word was: %s", game.Word.GetFullWord())
+                        message = fmt.Sprintf("Game Over! The word was: %s", fullWord)
                         messageType = "error"
                     }
                 }
@@ -94,20 +96,25 @@ func handleGuess(w http.ResponseWriter, r *http.Request) {
                 message = "Letter already guessed!"
                 messageType = "warning"
             }
+        } else {
+            message = "Please enter a letter!"
+            messageType = "warning"
         }
     }
 
-    if game.Word.IsFullyRevealed() {
-        message = "Congratulations! You've won!"
-        messageType = "success"
-    } else if game.MaxTries <= 0 {
+    if game.MaxTries <= 0 {
         message = fmt.Sprintf("Game Over! The word was: %s", game.Word.GetFullWord())
         messageType = "error"
+    } else if isWordComplete(game.GuessedWord) {
+        message = "Congratulations! You've won!"
+        messageType = "success"
     }
 
     session.Values["game"] = game
     if err := session.Save(r, w); err != nil {
         log.Printf("Session save error: %v", err)
+        http.Error(w, "Session save error", http.StatusInternalServerError)
+        return
     }
 
     data := hangmanweb.PageData{
@@ -120,7 +127,18 @@ func handleGuess(w http.ResponseWriter, r *http.Request) {
     if err := tmpl.ExecuteTemplate(w, "game.html", data); err != nil {
         log.Printf("Template execution error: %v", err)
         http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
     }
+}
+
+
+func isWordComplete(guessedWord []string) bool {
+    for _, letter := range guessedWord {
+        if letter == "_" {
+            return false
+        }
+    }
+    return true
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {

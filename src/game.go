@@ -178,14 +178,23 @@ func (g *Game) Play() {
 }
 
 func (g *Game) ProcessLetterGuess(letter rune) {
-	if g.Word.RevealLetter(letter) {
-		g.GuessedLetters[letter] = (string(letter))
-		fmt.Println(("Correct guess!"))
-	} else {
-		g.GuessedLetters[letter] = (string(letter))
-		g.MaxTries--
-		fmt.Println(("Incorrect guess!"))
-	}
+    letter = toLower(letter)
+    
+    if g.Word.RevealLetter(letter) {
+        g.GuessedLetters[letter] = string(letter)
+        
+        for i, char := range g.Word.GetFullWord() {
+            if toLower(char) == letter {
+                g.GuessedWord[i] = string(char)
+            }
+        }
+        
+        fmt.Println("Correct guess!")
+    } else {
+        g.GuessedLetters[letter] = string(letter)
+        g.MaxTries--
+        fmt.Println("Incorrect guess!")
+    }
 }
 
 func (g *Game) ProcessWordGuess(word string) {

@@ -47,8 +47,17 @@ func (w *Word) RevealAllLetters() {
 }
 
 func (w *Word) GetFullWord() string {
-	return w.fullWord
+var revealedWord strings.Builder
+	for _, char := range w.revealedWord {
+		if char == 0 {
+			revealedWord.WriteRune('_')
+		} else {
+			revealedWord.WriteRune(char)
+		}
+	}
+	return revealedWord.String()
 }
+
 
 func (w *Word) IsLetterRevealed(letter rune) bool {
     for i, char := range w.fullWord {
@@ -72,18 +81,7 @@ func (w *Word) GetDisplayWord() string {
 }
 
 func (w *Word) IsFullyRevealed() bool {
-   
-    if w.revealedCount != len(w.fullWord) {
-        return false
-    }
-    
-    for i, char := range w.fullWord {
-        if w.revealedWord[i] != char {
-            return false
-        }
-    }
-    
-    return true
+    return w.revealedCount == len(w.fullWord)
 }
 
 func (w *Word) GetRevealedCount() int {
@@ -110,6 +108,7 @@ func (w *Word) RevealLetter(letter rune) bool {
     
     return found
 }
+
 
 func toLower(r rune) rune {
     if r >= 'A' && r <= 'Z' {
